@@ -17,59 +17,59 @@ type Alert struct {
 	Annotations map[string]string `json:"annotations"`
 }
 
+type AlertWebhook struct {
+	Version           string            `json:"version"`
+	GroupKey          string            `json:"groupKey"`
+	Status            string            `json:"status"`
+	Receiver          string            `json:"receiver"`
+	GroupLabels       map[string]string `json:"groupLabels"`
+	CommonLabels      map[string]string `json:"commonLabels"`
+	CommonAnnotations map[string]string `json:"commonAnnotations"`
+	ExternalURL       string            `json:"externalURL"`
+	Alerts            []Alert           `json:"alerts"`
+}
+
 func main() {
-	// 初始化metrics收集器
+	// Initialize metrics collector
 	metrics.Init()
 
 	r := gin.Default()
 
-	// 添加prometheus metrics中间件
+	// Add prometheus metrics middleware
 	r.Use(metrics.PrometheusMiddleware())
 
-	// metrics endpoint
+	// Metrics endpoint
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	type AlertWebhook struct {
-		Version           string            `json:"version"`
-		GroupKey          string            `json:"groupKey"`
-		Status            string            `json:"status"`
-		Receiver          string            `json:"receiver"`
-		GroupLabels       map[string]string `json:"groupLabels"`
-		CommonLabels      map[string]string `json:"commonLabels"`
-		CommonAnnotations map[string]string `json:"commonAnnotations"`
-		ExternalURL       string            `json:"externalURL"`
-		Alerts            []Alert           `json:"alerts"`
-	}
-
-	// 添加告警webhook处理器
+	// Add alert webhook handler
 	r.POST("/webhook", func(c *gin.Context) {
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "读取请求体失败"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
 			return
 		}
 
 		var webhook AlertWebhook
 		if err := json.Unmarshal(body, &webhook); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "解析告警数据失败"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse alert data"})
 			return
 		}
 
-		// 打印告警信息到stdout
-		fmt.Printf("\n=== 收到新的告警 ===\n")
-		fmt.Printf("状态: %s\n", webhook.Status)
+		// Print alert information to stdout
+		fmt.Printf("\n=== Received New Alert ===\n")
+		fmt.Printf("Status: %s\n", webhook.Status)
 		for _, alert := range webhook.Alerts {
-			fmt.Printf("\n告警详情:\n")
-			fmt.Printf("状态: %s\n", alert.Status)
-			fmt.Printf("标签: %v\n", alert.Labels)
-			fmt.Printf("注释: %v\n", alert.Annotations)
+			fmt.Printf("\nAlert Details:\n")
+			fmt.Printf("Status: %s\n", alert.Status)
+			fmt.Printf("Labels: %v\n", alert.Labels)
+			fmt.Printf("Annotations: %v\n", alert.Annotations)
 		}
 		fmt.Println("==================")
 
-		c.JSON(http.StatusOK, gin.H{"message": "告警接收成功"})
+		c.JSON(http.StatusOK, gin.H{"message": "Alert received successfully"})
 	})
 
-	// 示例API
+	// Example APIs
 	r.GET("/hello", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Hello World",

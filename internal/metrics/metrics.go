@@ -27,18 +27,18 @@ var (
 	)
 )
 
-// Init 初始化metrics收集器
+// Init initializes the metrics collector
 func Init() {
 }
 
-// PrometheusMiddleware Gin中间件，用于收集HTTP指标
+// PrometheusMiddleware Gin middleware for collecting HTTP metrics
 func PrometheusMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
 		c.Next()
 
-		// 排除/metrics路径，避免自身监控数据干扰
+		// Skip /metrics path to avoid self-monitoring interference
 		if c.Request.URL.Path != "/metrics" {
 			duration := time.Since(start).Seconds()
 			status := c.Writer.Status()
