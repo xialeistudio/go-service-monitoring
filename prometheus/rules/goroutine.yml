@@ -1,0 +1,11 @@
+groups:
+  - name: goroutine_alerts
+    rules:
+      - alert: HighGoroutineCount
+        expr: go_goroutines > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: High Goroutine Count
+          description: "Goroutine count is {{ $value }} which is above threshold of 5" 
