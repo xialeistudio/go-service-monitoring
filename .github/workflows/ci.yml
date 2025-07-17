@@ -15,8 +15,8 @@ on:
       - ready_for_review
 
 jobs:
-  build:
-    name: Build
+  ci-check:
+    name: ci-check
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
